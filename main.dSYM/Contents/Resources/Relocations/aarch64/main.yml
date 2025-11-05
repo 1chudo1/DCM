@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/chd/Desktop/vscode proj/DCM/main'
+relocations:     []
+...
