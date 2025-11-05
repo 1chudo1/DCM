@@ -6,7 +6,6 @@ using namespace std;
 
 class AdvancedDicomProcessor {
 public:
-    // Структура для хранения DICOM информации
     struct DicomMetadata {
         string patientName;
         string patientID;
@@ -23,21 +22,21 @@ public:
     static DicomMetadata extractAllMetadata(const string& filename) {
         DicomMetadata metadata;
         
-        // Шаг 1: Загружаем DICOM файл
+        // загружаем DICOM файл
         DcmFileFormat fileformat;
         OFCondition status = fileformat.loadFile(filename.c_str());
         
         if (status.bad()) {
             cerr << "Ошибка загрузки файла: " << status.text() << endl;
-            return metadata; // Возвращаем пустую структуру
+            return metadata; 
         }
         
-        // Шаг 2: Получаем dataset
+        // dataset
         DcmDataset* dataset = fileformat.getDataset();
         OFString tempString;
         Sint32 tempInt;
         
-        // Извлекаем строковые теги
+        // теги
         if (dataset->findAndGetOFString(DCM_PatientName, tempString).good()) {
             metadata.patientName = tempString.c_str();
         }
@@ -57,13 +56,12 @@ public:
         if (dataset->findAndGetOFString(DCM_StudyDescription, tempString).good()) {
             metadata.studyDescription = tempString.c_str();
         }
-        
-        // Извлекаем числовые теги
+
         if (dataset->findAndGetSint32(DCM_BitsAllocated, tempInt).good()) {
             metadata.bitsAllocated = tempInt;
         }
         
-        // Шаг 3: Получаем информацию об изображении
+        // изображение
         DicomImage image(filename.c_str());
         if (image.getStatus() == EIS_Normal) {
             metadata.width = image.getWidth();
@@ -74,7 +72,7 @@ public:
         return metadata;
     }
     
-    // Метод для вывода информации в .txt
+    // вывод информации в .txt
     static void printMetadata(const DicomMetadata& metadata) {
         ofstream outFile("output.txt");
         if (outFile.is_open())
@@ -102,17 +100,17 @@ public:
 
 };
 
-// Пример использования
+// пример использования
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         cout << "Использование: " << argv[0] << " <dicom_file>" << endl;
         return 1;
     }
     
-    // Извлекаем метаданные
+    // извлекаем метаданные
     auto metadata = AdvancedDicomProcessor::extractAllMetadata(argv[1]);
     
-    // Выводим информацию
+    // выводим информацию
     AdvancedDicomProcessor::printMetadata(metadata);
     
     return 0;
