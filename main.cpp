@@ -87,16 +87,37 @@ public:
             outFile << "Бит на пиксель: " << metadata.bitsAllocated << endl;
             outFile << "Тип: " << (metadata.isMonochrome ? "Монохромное" : "Цветное") << endl;
             outFile.close();
-            cout << "Данные записаны в output.txt" << endl;
+            cout << "Данные о файле записаны в output.txt" << endl;
 
         }
         else 
         {
             cout << "Ошибка записи файла!" << endl;
         }
-        
-
     }
+    
+    static void imageData(string filename)
+    {
+        DicomImage *image = new DicomImage(filename.c_str());
+        if (image != NULL)
+        {
+            if (image->getStatus() == EIS_Normal)
+            {
+                Uint8 *pixelData = (Uint8 *)(image->getOutputData(8));
+                // размеры изображения
+                const unsigned long width = image->getWidth();
+                const unsigned long height = image->getHeight();
+                std::cout << "Размер: " << width << "x" << height << std::endl;
+                std::ofstream outFile("pixels.raw", std::ios::binary);
+                outFile.write(reinterpret_cast<char*>(pixelData), width * height);
+                outFile.close();
+                cout << ".raw файл получен!" << endl;
+            } else
+                cerr << "Ошибка записи .raw" << DicomImage::getString(image->getStatus()) << ")" << endl;
+        }
+        delete image;
+    }
+
 
 };
 
@@ -112,6 +133,10 @@ int main(int argc, char* argv[]) {
     
     // выводим информацию
     AdvancedDicomProcessor::printMetadata(metadata);
+
+    AdvancedDicomProcessor::imageData("image-000001.dcm");
+
+
     
     return 0;
 }
