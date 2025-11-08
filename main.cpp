@@ -96,6 +96,7 @@ public:
         }
     }
     
+    // получение информации из картинки
     static void imageData(string filename)
     {
         DicomImage *image = new DicomImage(filename.c_str());
@@ -107,8 +108,8 @@ public:
                 // размеры изображения
                 const unsigned long width = image->getWidth();
                 const unsigned long height = image->getHeight();
-                std::cout << "Размер: " << width << "x" << height << std::endl;
-                std::ofstream outFile("pixels.raw", std::ios::binary);
+                std::cout << "Размер: " << width << "x" << height << endl;
+                std::ofstream outFile("pixels.raw", ios::binary);
                 outFile.write(reinterpret_cast<char*>(pixelData), width * height);
                 outFile.close();
                 cout << ".raw файл получен!" << endl;
