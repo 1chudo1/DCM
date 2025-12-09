@@ -1,6 +1,7 @@
 #include <iostream>
 #include "dcmtk/dcmdata/dctk.h"
 #include "dcmtk/dcmdata/dcjson.h"
+#include "dcmtk/dcmimgle/dcmimage.h"
 
 
 using namespace std;
@@ -9,7 +10,7 @@ string extractMetaDataJSON(DcmFileFormat& file)
 {
     DcmMetaInfo* meta = file.getMetaInfo();
 
-    DcmJsonFormatPretty fmt(OFTrue);
+    DcmJsonFormatCompact fmt(OFTrue);
     ostringstream stream;
 
     meta->writeJson(stream, fmt);
@@ -22,7 +23,7 @@ string extractDataSetJSON(DcmFileFormat& file)
 {
     DcmDataset* ds = file.getDataset();
 
-    DcmJsonFormatPretty fmt(OFTrue);
+    DcmJsonFormatCompact fmt(OFTrue);
     ostringstream stream;
 
     ds->writeJson(stream, fmt);
@@ -30,19 +31,11 @@ string extractDataSetJSON(DcmFileFormat& file)
     return stream.str();
 }
 
-vector<uint8_t> extractImageBytes(DcmFileFormat& file)
+void extractImageBytes(const char* dcmFile, const char* bmpFile)
 {
-    DcmDataset* ds = file.getDataset();
+    DicomImage image(dcmFile);
 
-    const Uint8* pixelData = nullptr;
-    unsigned long pixelSize = 0;
-
-    OFCondition status = ds->findAndGetUint8Array(DCM_PixelData, pixelData, &pixelSize);
-    if (status.bad() || !pixelData) {
-        throw runtime_error("PixelData не найден");
-    }
-
-    return vector<uint8_t>(pixelData, pixelData + pixelSize);
+    int status = image.writeBMP(bmpFile);
 }
 
 int main(int argc, char* argv[])
@@ -53,6 +46,7 @@ int main(int argc, char* argv[])
     }
 
     const char* dcmPath = argv[1];
+    const char* bmpPath = "output.bmp";
 
     DcmFileFormat file;
     if (file.loadFile(dcmPath).bad()) {
@@ -63,11 +57,11 @@ int main(int argc, char* argv[])
     try {
         string metaJson = extractMetaDataJSON(file);
         string dataSetJson = extractDataSetJSON(file);
-        vector<uint8_t> imageBytes = extractImageBytes(file);
+        
+        extractImageBytes(dcmPath, bmpPath);
 
         cout << "Meta JSON size: " << metaJson.size() << "\n";
         cout << "DataSet JSON size: " << dataSetJson.size() << "\n";
-        cout << "Image bytes: " << imageBytes.size() << "\n";
 
     } catch (const exception& e) {
         cerr << "Ошибка: " << e.what() << "\n";
